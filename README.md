@@ -20,3 +20,11 @@ $ ./target/release/notifiers --certificate-file <file.p12> --password <password>
 ```sh
 $ curl -X POST -d '{ "token": "<device token>" }' http://localhost:9000/register
 ```
+
+### Enabling metrics
+
+To enable OpenMetrics (Prometheus) metrics endpoint,
+run with `--metrics` argument,
+e.g. `--metrics 127.0.0.1:9001`.
+Metrics can then be retrieved with
+`curl http://127.0.0.1:9001/metrics`.

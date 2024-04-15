@@ -6,10 +6,12 @@ use anyhow::Result;
 use async_std::prelude::*;
 use log::*;
 
+use crate::metrics::Metrics;
 use crate::state::State;
 
 pub async fn start(state: State, interval: std::time::Duration) -> Result<()> {
     let db = state.db();
+    let metrics = state.metrics();
     let production_client = state.production_client();
     let sandbox_client = state.sandbox_client();
     let topic = state.topic();
@@ -20,12 +22,12 @@ pub async fn start(state: State, interval: std::time::Duration) -> Result<()> {
     );
 
     // first wakeup on startup
-    wakeup(db, production_client, sandbox_client, topic).await;
+    wakeup(db, metrics, production_client, sandbox_client, topic).await;
 
     // create interval
     let mut interval = async_std::stream::interval(interval);
     while interval.next().await.is_some() {
-        wakeup(db, production_client, sandbox_client, topic).await;
+        wakeup(db, metrics, production_client, sandbox_client, topic).await;
     }
 
     Ok(())
@@ -33,6 +35,7 @@ pub async fn start(state: State, interval: std::time::Duration) -> Result<()> {
 
 async fn wakeup(
     db: &sled::Db,
+    metrics: &Metrics,
     production_client: &Client,
     sandbox_client: &Client,
     topic: Option<&str>,
@@ -46,6 +49,7 @@ async fn wakeup(
         .collect::<Vec<_>>();
 
     info!("sending notifications to {} devices", tokens.len());
+    metrics.set_heartbeat_token_count(tokens.len());
 
     for device_token in tokens {
         info!("notify: {}", device_token);

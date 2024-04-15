@@ -6,6 +6,8 @@ use async_std::sync::Arc;
 use log::*;
 use std::io::Seek;
 
+use crate::metrics::Metrics;
+
 #[derive(Debug, Clone)]
 pub struct State {
     inner: Arc<InnerState>,
@@ -20,6 +22,8 @@ pub struct InnerState {
     sandbox_client: Client,
 
     topic: Option<String>,
+
+    metrics: Arc<Metrics>,
 }
 
 impl State {
@@ -28,6 +32,7 @@ impl State {
         mut certificate: std::fs::File,
         password: &str,
         topic: Option<String>,
+        metrics: Arc<Metrics>,
     ) -> Result<Self> {
         let db = sled::open(db)?;
         let production_client =
@@ -45,6 +50,7 @@ impl State {
                 production_client,
                 sandbox_client,
                 topic,
+                metrics,
             }),
         })
     }
@@ -63,5 +69,9 @@ impl State {
 
     pub fn topic(&self) -> Option<&str> {
         self.inner.topic.as_deref()
+    }
+
+    pub fn metrics(&self) -> &Metrics {
+        self.inner.metrics.as_ref()
     }
 }

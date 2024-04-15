@@ -73,6 +73,7 @@ async fn notify_device(mut req: tide::Request<State>) -> tide::Result<tide::Resp
             match res.code {
                 200 => {
                     info!("delivered notification for {}", device_token);
+                    req.state().metrics().inc_direct_notification();
                 }
                 _ => {
                     warn!("unexpected status: {:?}", res);
