@@ -21,6 +21,9 @@ pub struct Metrics {
     /// Number of successfully sent visible notifications.
     pub direct_notifications_total: Counter,
 
+    /// Number of successfully sent heartbeat notifications.
+    pub heartbeat_notifications_total: Counter,
+
     /// Number of tokens registered for heartbeat notifications.
     pub heartbeat_token_count: Gauge<i64, AtomicI64>,
 }
@@ -36,6 +39,13 @@ impl Metrics {
             direct_notifications_total.clone(),
         );
 
+        let heartbeat_notifications_total = Counter::default();
+        registry.register(
+            "heartbeat_notifications",
+            "Number of heartbeat notifications",
+            heartbeat_notifications_total.clone(),
+        );
+
         let heartbeat_token_count = Gauge::<i64, AtomicI64>::default();
         registry.register(
             "heartbeat_token_count",
@@ -46,6 +56,7 @@ impl Metrics {
         Self {
             registry,
             direct_notifications_total,
+            heartbeat_notifications_total,
             heartbeat_token_count,
         }
     }
@@ -53,6 +64,11 @@ impl Metrics {
     /// Counts direct notification.
     pub fn inc_direct_notification(&self) {
         self.direct_notifications_total.inc();
+    }
+
+    /// Counts heartbeat notification.
+    pub fn inc_heartbeat_notification(&self) {
+        self.heartbeat_notifications_total.inc();
     }
 
     /// Sets number of tokens registered for heartbeat notifications.

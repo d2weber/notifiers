@@ -83,6 +83,7 @@ async fn wakeup(
             Ok(res) => match res.code {
                 200 => {
                     info!("delivered notification for {}", device_token);
+                    metrics.inc_heartbeat_notification();
                 }
                 _ => {
                     warn!("unexpected status: {:?}", res);
