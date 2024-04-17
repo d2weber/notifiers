@@ -90,27 +90,33 @@ mod tests {
         let dir = tempdir()?;
         let db_path = dir.path().join("db.sled");
         let schedule = Schedule::new(&db_path)?;
+        assert_eq!(schedule.token_count(), 0);
 
         schedule.insert_token("foo", 10)?;
         schedule.insert_token("bar", 20)?;
+        assert_eq!(schedule.token_count(), 2);
 
         let (first_timestamp, first_token) = schedule.pop().unwrap();
         assert_eq!(first_timestamp, 10);
         assert_eq!(first_token, "foo");
         schedule.insert_token("foo", 30)?;
         schedule.flush().await?;
+        assert_eq!(schedule.token_count(), 2);
 
         // Reopen to test persistence.
         drop(schedule);
         let schedule = Schedule::new(&db_path)?;
+        assert_eq!(schedule.token_count(), 2);
 
         let (second_timestamp, second_token) = schedule.pop().unwrap();
         assert_eq!(second_timestamp, 20);
         assert_eq!(second_token, "bar");
+        assert_eq!(schedule.token_count(), 1);
 
         // Simulate restart or crash, token "bar" was not reinserted or removed by the app.
         drop(schedule);
         let schedule = Schedule::new(&db_path)?;
+        assert_eq!(schedule.token_count(), 2);
 
         // Token "bar" is still there.
         let (second_timestamp, second_token) = schedule.pop().unwrap();
