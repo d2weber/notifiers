@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "a2"
 version = "0.8.0"
-source = "git+https://github.com/gferon/a2/?branch=apns-push-type#a8d689273bd456a54a9cab8043e1caa308ac16ca"
+source = "git+https://github.com/WalletConnect/a2/?branch=master#ce701eb57b13708c3d283c7c89b03478ccd9d8f0"
 dependencies = [
  "base64 0.20.0",
  "erased-serde",
@@ -1301,7 +1301,6 @@ dependencies = [
  "async-std",
  "femme",
  "humantime",
- "hyper",
  "log",
  "prometheus-client",
  "serde",
