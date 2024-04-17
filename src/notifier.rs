@@ -45,7 +45,14 @@ pub async fn start(state: State, interval: std::time::Duration) -> Result<()> {
             .unwrap_or(now)
             .duration_since(now)
             .unwrap_or_default();
-        async_std::task::sleep(delay).await;
+
+        if !delay.is_zero() {
+            info!(
+                "Sleeping for {} before next notification.",
+                humantime::format_duration(delay)
+            );
+            async_std::task::sleep(delay).await;
+        }
 
         if let Err(err) = wakeup(
             schedule,
