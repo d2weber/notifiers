@@ -24,7 +24,7 @@ pub struct InnerState {
 
     topic: Option<String>,
 
-    metrics: Arc<Metrics>,
+    metrics: Metrics,
 
     /// Heartbeat notification interval.
     interval: Duration,
@@ -36,7 +36,7 @@ impl State {
         mut certificate: std::fs::File,
         password: &str,
         topic: Option<String>,
-        metrics: Arc<Metrics>,
+        metrics: Metrics,
         interval: Duration,
     ) -> Result<Self> {
         let schedule = Schedule::new(db)?;
@@ -76,7 +76,7 @@ impl State {
     }
 
     pub fn metrics(&self) -> &Metrics {
-        self.inner.metrics.as_ref()
+        &self.inner.metrics
     }
 
     pub fn interval(&self) -> Duration {

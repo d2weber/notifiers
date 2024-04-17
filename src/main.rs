@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use structopt::StructOpt;
@@ -41,14 +40,14 @@ async fn main() -> Result<()> {
     let opt = Opt::from_args();
     let certificate = std::fs::File::open(&opt.certificate_file).context("invalid certificate")?;
 
-    let metrics_state = Arc::new(metrics::Metrics::new());
+    let metrics_state = metrics::Metrics::new();
 
     let state = state::State::new(
         &opt.db,
         certificate,
         &opt.password,
         opt.topic.clone(),
-        metrics_state.clone(),
+        metrics_state,
         opt.interval,
     )?;
 
@@ -57,7 +56,8 @@ async fn main() -> Result<()> {
     let interval = opt.interval;
 
     if let Some(metrics_address) = opt.metrics.clone() {
-        async_std::task::spawn(async move { metrics::start(metrics_state, metrics_address).await });
+        let state = state.clone();
+        async_std::task::spawn(async move { metrics::start(state, metrics_address).await });
     }
 
     // Setup mulitple parallel notifiers.

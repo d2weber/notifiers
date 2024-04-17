@@ -5,7 +5,6 @@
 //! independently of the main service.
 
 use std::sync::atomic::AtomicI64;
-use std::sync::Arc;
 
 use prometheus_client::encoding::text::encode;
 use prometheus_client::metrics::counter::Counter;
@@ -13,6 +12,8 @@ use prometheus_client::metrics::gauge::Gauge;
 use prometheus_client::registry::Registry;
 
 use anyhow::Result;
+
+use crate::state::State;
 
 #[derive(Debug, Default)]
 pub struct Metrics {
@@ -73,8 +74,6 @@ impl Metrics {
     }
 }
 
-type State = Arc<Metrics>;
-
 pub async fn start(state: State, server: String) -> Result<()> {
     let mut app = tide::with_state(state);
     app.at("/metrics").get(metrics);
@@ -84,7 +83,7 @@ pub async fn start(state: State, server: String) -> Result<()> {
 
 async fn metrics(req: tide::Request<State>) -> tide::Result<tide::Response> {
     let mut encoded = String::new();
-    encode(&mut encoded, &req.state().registry).unwrap();
+    encode(&mut encoded, &req.state().metrics().registry).unwrap();
     let response = tide::Response::builder(tide::StatusCode::Ok)
         .body(encoded)
         .content_type("application/openmetrics-text; version=1.0.0; charset=utf-8")
