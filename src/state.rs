@@ -1,12 +1,13 @@
+use std::io::Seek;
 use std::path::Path;
+use std::time::Duration;
 
 use a2::{Client, Endpoint};
 use anyhow::{Context as _, Result};
 use async_std::sync::Arc;
-use log::*;
-use std::io::Seek;
 
 use crate::metrics::Metrics;
+use crate::schedule::Schedule;
 
 #[derive(Debug, Clone)]
 pub struct State {
@@ -15,7 +16,7 @@ pub struct State {
 
 #[derive(Debug)]
 pub struct InnerState {
-    db: sled::Db,
+    schedule: Schedule,
 
     production_client: Client,
 
@@ -24,6 +25,9 @@ pub struct InnerState {
     topic: Option<String>,
 
     metrics: Arc<Metrics>,
+
+    /// Heartbeat notification interval.
+    interval: Duration,
 }
 
 impl State {
@@ -33,8 +37,9 @@ impl State {
         password: &str,
         topic: Option<String>,
         metrics: Arc<Metrics>,
+        interval: Duration,
     ) -> Result<Self> {
-        let db = sled::open(db)?;
+        let schedule = Schedule::new(db)?;
         let production_client =
             Client::certificate(&mut certificate, password, Endpoint::Production)
                 .context("Failed to create production client")?;
@@ -42,21 +47,20 @@ impl State {
         let sandbox_client = Client::certificate(&mut certificate, password, Endpoint::Sandbox)
             .context("Failed to create sandbox client")?;
 
-        info!("{} devices registered currently", db.len());
-
         Ok(State {
             inner: Arc::new(InnerState {
-                db,
+                schedule,
                 production_client,
                 sandbox_client,
                 topic,
                 metrics,
+                interval,
             }),
         })
     }
 
-    pub fn db(&self) -> &sled::Db {
-        &self.inner.db
+    pub fn schedule(&self) -> &Schedule {
+        &self.inner.schedule
     }
 
     pub fn production_client(&self) -> &Client {
@@ -73,5 +77,9 @@ impl State {
 
     pub fn metrics(&self) -> &Metrics {
         self.inner.metrics.as_ref()
+    }
+
+    pub fn interval(&self) -> Duration {
+        self.inner.interval
     }
 }

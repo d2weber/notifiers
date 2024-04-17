@@ -29,9 +29,8 @@ async fn register_device(mut req: tide::Request<State>) -> tide::Result<tide::Re
     let query: DeviceQuery = req.body_json().await?;
     info!("register_device {}", query.token);
 
-    let db = req.state().db();
-    db.insert(query.token.as_bytes(), vec![1])?;
-    db.flush_async().await?;
+    let schedule = req.state().schedule();
+    schedule.insert_token_now(&query.token).await?;
 
     req.state().metrics().heartbeat_registrations_total.inc();
 
@@ -50,7 +49,7 @@ async fn notify_device(mut req: tide::Request<State>) -> tide::Result<tide::Resp
         (req.state().production_client(), device_token.as_str())
     };
 
-    let db = req.state().db();
+    let schedule = req.state().schedule();
     let payload = DefaultNotificationBuilder::new()
         .set_title("New messages")
         .set_title_loc_key("new_messages") // Localization key for the title.
@@ -91,7 +90,7 @@ async fn notify_device(mut req: tide::Request<State>) -> tide::Result<tide::Resp
                 // <https://developer.apple.com/documentation/usernotifications/handling-notification-responses-from-apns>
                 //
                 // Unsubscribe invalid token from heartbeat notification if it is subscribed.
-                if let Err(err) = db.remove(device_token) {
+                if let Err(err) = schedule.remove_token(device_token) {
                     error!("failed to remove {}: {:?}", &device_token, err);
                 }
                 // Return 410 Gone response so email server can remove the token.

@@ -50,6 +50,7 @@ async fn main() -> Result<()> {
         &opt.password,
         opt.topic.clone(),
         metrics_state.clone(),
+        opt.interval,
     )?;
 
     let state2 = state.clone();
