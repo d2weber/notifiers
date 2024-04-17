@@ -33,6 +33,8 @@ async fn register_device(mut req: tide::Request<State>) -> tide::Result<tide::Re
     db.insert(query.token.as_bytes(), vec![1])?;
     db.flush_async().await?;
 
+    req.state().metrics().heartbeat_registrations_total.inc();
+
     Ok(tide::Response::new(tide::StatusCode::Ok))
 }
 
