@@ -60,21 +60,6 @@ impl Metrics {
             heartbeat_token_count,
         }
     }
-
-    /// Counts direct notification.
-    pub fn inc_direct_notification(&self) {
-        self.direct_notifications_total.inc();
-    }
-
-    /// Counts heartbeat notification.
-    pub fn inc_heartbeat_notification(&self) {
-        self.heartbeat_notifications_total.inc();
-    }
-
-    /// Sets number of tokens registered for heartbeat notifications.
-    pub fn set_heartbeat_token_count(&self, value: usize) {
-        self.heartbeat_token_count.set(value as i64);
-    }
 }
 
 type State = Arc<Metrics>;

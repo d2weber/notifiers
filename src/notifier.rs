@@ -48,7 +48,7 @@ async fn wakeup(
         .collect::<Vec<_>>();
 
     info!("sending notifications to {} devices", tokens.len());
-    metrics.set_heartbeat_token_count(tokens.len());
+    metrics.heartbeat_token_count.set(tokens.len() as i64);
 
     for key_device_token in tokens {
         info!("notify: {}", key_device_token);
@@ -82,7 +82,7 @@ async fn wakeup(
             Ok(res) => match res.code {
                 200 => {
                     info!("delivered notification for {}", device_token);
-                    metrics.inc_heartbeat_notification();
+                    metrics.heartbeat_notifications_total.inc();
                 }
                 _ => {
                     warn!("unexpected status: {:?}", res);
