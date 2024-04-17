@@ -3,7 +3,6 @@ use a2::{
     NotificationOptions, Priority,
 };
 use anyhow::Result;
-use async_std::prelude::*;
 use log::*;
 
 use crate::metrics::Metrics;
@@ -21,16 +20,16 @@ pub async fn start(state: State, interval: std::time::Duration) -> Result<()> {
         humantime::format_duration(interval)
     );
 
-    // first wakeup on startup
-    wakeup(db, metrics, production_client, sandbox_client, topic).await;
-
-    // create interval
-    let mut interval = async_std::stream::interval(interval);
-    while interval.next().await.is_some() {
+    loop {
+        let wakeup_start = std::time::Instant::now();
         wakeup(db, metrics, production_client, sandbox_client, topic).await;
+        let elapsed = wakeup_start.elapsed();
+        info!(
+            "Waking up all devices took {}",
+            humantime::format_duration(elapsed)
+        );
+        async_std::task::sleep(interval.saturating_sub(elapsed)).await;
     }
-
-    Ok(())
 }
 
 async fn wakeup(
