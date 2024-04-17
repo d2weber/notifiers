@@ -28,7 +28,7 @@ pub async fn start(state: State, interval: std::time::Duration) -> Result<()> {
             .heartbeat_token_count
             .set(schedule.token_count() as i64);
 
-        let Some((timestamp, token)) = schedule.pop() else {
+        let Some((timestamp, token)) = schedule.pop()? else {
             info!("No tokens to notify, sleeping for a minute.");
             async_std::task::sleep(Duration::from_secs(60)).await;
             continue;
