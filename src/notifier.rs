@@ -51,14 +51,14 @@ async fn wakeup(
     info!("sending notifications to {} devices", tokens.len());
     metrics.set_heartbeat_token_count(tokens.len());
 
-    for device_token in tokens {
-        info!("notify: {}", device_token);
+    for key_device_token in tokens {
+        info!("notify: {}", key_device_token);
 
         let (client, device_token) =
-            if let Some(sandbox_token) = device_token.strip_prefix("sandbox:") {
+            if let Some(sandbox_token) = key_device_token.strip_prefix("sandbox:") {
                 (sandbox_client, sandbox_token)
             } else {
-                (production_client, device_token.as_str())
+                (production_client, key_device_token.as_str())
             };
 
         // Send silent notification.
@@ -90,13 +90,19 @@ async fn wakeup(
                 }
             },
             Err(ResponseError(res)) => {
-                info!("Removing token {} due to error {:?}.", &device_token, res);
-                if let Err(err) = db.remove(device_token) {
-                    error!("failed to remove {}: {:?}", &device_token, err);
+                info!(
+                    "Removing token {} due to error {:?}.",
+                    &key_device_token, res
+                );
+                if let Err(err) = db.remove(&key_device_token) {
+                    error!("failed to remove {}: {:?}", &key_device_token, err);
                 }
             }
             Err(err) => {
-                error!("failed to send notification: {}, {:?}", device_token, err);
+                error!(
+                    "failed to send notification: {}, {:?}",
+                    key_device_token, err
+                );
             }
         }
     }
