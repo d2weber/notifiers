@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use a2::{Client, Endpoint};
 use anyhow::{Context as _, Result};
@@ -28,7 +28,7 @@ pub struct InnerState {
 
 impl State {
     pub fn new(
-        db: &PathBuf,
+        db: &Path,
         mut certificate: std::fs::File,
         password: &str,
         topic: Option<String>,
