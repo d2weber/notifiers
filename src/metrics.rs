@@ -29,7 +29,7 @@ pub struct Metrics {
     pub heartbeat_registrations_total: Counter,
 
     /// Number of tokens registered for heartbeat notifications.
-    pub heartbeat_token_count: Gauge<i64, AtomicI64>,
+    pub heartbeat_tokens: Gauge<i64, AtomicI64>,
 }
 
 impl Metrics {
@@ -57,11 +57,11 @@ impl Metrics {
             heartbeat_registrations_total.clone(),
         );
 
-        let heartbeat_token_count = Gauge::<i64, AtomicI64>::default();
+        let heartbeat_tokens = Gauge::<i64, AtomicI64>::default();
         registry.register(
-            "heartbeat_token_count",
+            "heartbeat_tokens",
             "Number of tokens registered for heartbeat notifications",
-            heartbeat_token_count.clone(),
+            heartbeat_tokens.clone(),
         );
 
         Self {
@@ -69,7 +69,7 @@ impl Metrics {
             direct_notifications_total,
             heartbeat_notifications_total,
             heartbeat_registrations_total,
-            heartbeat_token_count,
+            heartbeat_tokens,
         }
     }
 }
