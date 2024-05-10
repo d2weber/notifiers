@@ -31,6 +31,10 @@ struct Opt {
     db: PathBuf,
     #[structopt(long, default_value = "20m", parse(try_from_str = humantime::parse_duration))]
     interval: std::time::Duration,
+
+    /// Path to FCM private key.
+    #[structopt(long)]
+    fcm_key_path: String,
 }
 
 #[async_std::main]
@@ -49,7 +53,9 @@ async fn main() -> Result<()> {
         opt.topic.clone(),
         metrics_state,
         opt.interval,
-    )?;
+        opt.fcm_key_path,
+    )
+    .await?;
 
     let host = opt.host.clone();
     let port = opt.port;

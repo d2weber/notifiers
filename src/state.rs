@@ -9,14 +9,15 @@ use async_std::sync::Arc;
 use crate::metrics::Metrics;
 use crate::schedule::Schedule;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct State {
     inner: Arc<InnerState>,
 }
 
-#[derive(Debug)]
 pub struct InnerState {
     schedule: Schedule,
+
+    fcm_client: reqwest::Client,
 
     production_client: Client,
 
@@ -28,18 +29,32 @@ pub struct InnerState {
 
     /// Heartbeat notification interval.
     interval: Duration,
+
+    fcm_authenticator: yup_oauth2::authenticator::DefaultAuthenticator,
 }
 
 impl State {
-    pub fn new(
+    pub async fn new(
         db: &Path,
         mut certificate: std::fs::File,
         password: &str,
         topic: Option<String>,
         metrics: Metrics,
         interval: Duration,
+        fcm_key_path: String,
     ) -> Result<Self> {
         let schedule = Schedule::new(db)?;
+        let fcm_client = reqwest::Client::new();
+
+        let fcm_key: yup_oauth2::ServiceAccountKey =
+            yup_oauth2::read_service_account_key(fcm_key_path)
+                .await
+                .context("Failed to read key")?;
+        let fcm_authenticator = yup_oauth2::ServiceAccountAuthenticator::builder(fcm_key)
+            .build()
+            .await
+            .context("Failed to create authenticator")?;
+
         let production_client =
             Client::certificate(&mut certificate, password, Endpoint::Production)
                 .context("Failed to create production client")?;
@@ -50,17 +65,34 @@ impl State {
         Ok(State {
             inner: Arc::new(InnerState {
                 schedule,
+                fcm_client,
                 production_client,
                 sandbox_client,
                 topic,
                 metrics,
                 interval,
+                fcm_authenticator,
             }),
         })
     }
 
     pub fn schedule(&self) -> &Schedule {
         &self.inner.schedule
+    }
+
+    pub fn fcm_client(&self) -> &reqwest::Client {
+        &self.inner.fcm_client
+    }
+
+    pub async fn fcm_token(&self) -> Result<Option<String>> {
+        let token = self
+            .inner
+            .fcm_authenticator
+            .token(&["https://www.googleapis.com/auth/firebase.messaging"])
+            .await?
+            .token()
+            .map(|s| s.to_string());
+        Ok(token)
     }
 
     pub fn production_client(&self) -> &Client {
