@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use std::time::SystemTime;
 
 use anyhow::Result;
+use rand::Rng;
 
 #[derive(Debug)]
 pub struct Schedule {
@@ -52,7 +53,9 @@ impl Schedule {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-        self.insert_token(token, now)
+        let mut rng = rand::thread_rng();
+        let jitter = rng.gen_range(0..120);
+        self.insert_token(token, now.saturating_sub(60).saturating_add(jitter))
     }
 
     pub async fn flush(&self) -> Result<()> {

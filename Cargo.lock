@@ -1562,6 +1562,7 @@ dependencies = [
  "humantime",
  "log",
  "prometheus-client",
+ "rand 0.8.5",
  "reqwest",
  "serde",
  "sled",
