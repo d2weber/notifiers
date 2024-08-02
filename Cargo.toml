@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 a2 = { git = "https://github.com/WalletConnect/a2/", branch = "master" }
 anyhow = "1.0.32"
-async-std = { version = "1.9", features = ["tokio1", "attributes", "unstable"] }
+axum = "0.7.5"
 femme = "2.1.0"
 humantime = "2.0.1"
 log = "0.4.11"
@@ -16,9 +16,10 @@ prometheus-client = "0.22.2"
 rand = "0.8.5"
 reqwest = "0.12.4"
 serde = { version = "1.0.114", features = ["derive"] }
+serde_json = "1.0.122"
 sled = "0.34.2"
 structopt = "0.3.15"
-tide = "0.16.0"
+tokio = { version = "1.39.2", features = ["full"] }
 yup-oauth2 = "9.0.0"
 
 [dev-dependencies]
