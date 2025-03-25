@@ -1,11 +1,12 @@
-# Delta Chat Notification Proxy 
+# Chatmail Notification Proxy
 
-The Delta Chat notification proxy is deployed as a central service 
+The Chatmail notification proxy is deployed as a central service
 on https://notifications.delta.chat 
 
 The notification proxy is a small Rust program 
 that forwards "device tokens" to Apple and Google "Push Services"
-that in turn wake up the Delta Chat app on user's devices.
+that in turn wake up the clients
+using [Chatmail core](https://github.com/chatmail/core/) on user's devices.
 
 ## Usage 
 
