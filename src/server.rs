@@ -243,7 +243,7 @@ async fn notify_device(
     info!("Got direct notification for {device_token}.");
     let device_token: NotificationToken = device_token.as_str().parse()?;
 
-    match device_token {
+    let status_code = match device_token {
         NotificationToken::Fcm {
             package_name,
             token,
@@ -260,16 +260,16 @@ async fn notify_device(
                 &token,
                 metrics,
             )
-            .await?;
+            .await?
         }
         NotificationToken::ApnsSandbox(token) => {
             let client = state.sandbox_client().clone();
-            notify_apns(state, client, token).await?;
+            notify_apns(state, client, token).await?
         }
         NotificationToken::ApnsProduction(token) => {
             let client = state.production_client().clone();
-            notify_apns(state, client, token).await?;
+            notify_apns(state, client, token).await?
         }
-    }
-    Ok(StatusCode::OK)
+    };
+    Ok(status_code)
 }
