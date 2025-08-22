@@ -85,6 +85,7 @@ async fn wakeup(
     let device_token: NotificationToken = key_device_token.as_str().parse()?;
 
     let (client, device_token) = match device_token {
+        NotificationToken::UBports(_) => todo!(),
         NotificationToken::Fcm { .. } => {
             // Only APNS tokens can be registered for periodic notifications.
             info!("Removing FCM token {key_device_token}");
