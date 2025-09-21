@@ -138,7 +138,7 @@ async fn notify_ubports(
     let url = "https://push.ubports.com/notify";
     let expire_on = (Local::now() + TimeDelta::weeks(1)).to_rfc3339();
     let body = format!(
-        r#"{{"expire_on":"{expire_on}","appid":"deltatouch.lotharketterer_deltatouch","token":{token},"data":{{sent-by:"Chatmail Server"}} }}"#
+        r#"{{"expire_on":"{expire_on}","appid":"deltatouch.lotharketterer_deltatouch","token":"{token}","data":{{"notification":{{"tag":"sent_by_chatmail_server","card":{{"popup":true,"persist":true,"summary":"New message","body":"You have a new message"}},"sound":true,"vibrate":{{"pattern":[200],"duration":200,"repeat":1}} }},"sent-by":"Chatmail Server"}} }}"#
     );
     let res = client
         .post(url)
